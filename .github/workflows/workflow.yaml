@@ -41,7 +41,7 @@ jobs:
       run: docker push registry.digitalocean.com/mwalden/heicconverter:$(echo $GITHUB_SHA | head -c7)
 
     - name: Update deployment file
-      run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|registry.digitalocean.com/mwalden/heicconverter:'${TAG}'|' $GITHUB_WORKSPACE/kube/scraper.yaml
+      run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|registry.digitalocean.com/mwalden/heicconverter:'${TAG}'|' $GITHUB_WORKSPACE/kube/website.yaml
 
     - name: Save DigitalOcean kubeconfig with short-lived credentials
       run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 k8-mwalden
