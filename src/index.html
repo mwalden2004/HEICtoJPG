@@ -1,0 +1,104 @@
+<html>
+
+<head>
+    <title>HEIC to JPG Converter</title>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 px-3 py-2">
+
+    <h1 class="tracking-wide text-black text-3xl">HEIC to PNG Converter</h1>
+
+    <label for="files">Select files:</label>
+    <input type="file" id="files" name="files" accept=".heic" multiple class="rounded-lg bg-blue-400 text-white px-3 py-2 hover:bg-blue-500">
+
+    <button id="download-all" class="rounded-lg bg-blue-400 text-white px-3 py-2 hover:bg-blue-500">Download all converted images</button>
+
+
+    <div id="output" class="mt-5 border-t-2 border-gray-300">
+
+    </div>
+
+    <div id="status" class="mt-5 border-t-2 border-gray-300">
+
+    </div>
+
+</body>
+
+<script type="module">
+    import heic2any from 'https://cdn.skypack.dev/heic2any';
+
+    const blobs = [];
+
+    document.getElementById('download-all').addEventListener("click", () => {
+        for (let i = 0; i <= blobs.length-1; i++){
+            saveFile(blobs[i][0],blobs[i][1])
+        }
+    })
+
+    const status = document.getElementById("status");
+
+    document.getElementById("files").addEventListener("change", function (ev) {
+        for (let i = 0; i <= ev.target.files.length-1; i++) {
+            const target = ev.target.files[i];
+            const blob = target;
+            const id = Math.random();
+            const name = target.name.replace(".heic", "");
+
+            status.insertAdjacentHTML("beforeend", `<p id="status-${id}">${name}: Beginning conversion</p>`)
+            const statusEl = document.getElementById(`status-${id}`);
+            heic2any({
+                blob: blob,
+                toType: "image/png",
+            })
+                .then(function (resultBlob) {
+
+                    var imageUrl = URL.createObjectURL(resultBlob);
+                    statusEl.innerHTML = `${name}: Finished conversion successfully`;
+
+                    document.getElementById("output").insertAdjacentHTML("beforeend", `
+                    <div class="${document.getElementById("output").children.length % 2 == 0 ? "bg-gray-100" : " bg-gray-200"} mt-3 flex">
+                        <img src="${imageUrl}" style="width: 200px; height: auto;">
+                        <div class="pl-4 pt-2">
+                            <p>${name}</p>
+                            <button id="download-${id}" class="rounded-lg bg-blue-400 text-white px-3 py-2 hover:bg-blue-500">Download</button>
+                            <p class="hidden" id="downloaded-${id}">Already downloaded*</p>
+                        </div>
+                    </div>
+                    `)
+
+                    blobs.push([resultBlob, name + ".png"])
+
+                    document.getElementById(`download-${id}`).addEventListener("click", () => {
+                        saveFile(resultBlob, name + ".png");
+                        document.getElementById(`downloaded-${id}`).classList.remove("hide");
+                    })
+                })
+                .catch(function (x) {
+                    console.log(x)
+                    statusEl.innerHTML = `${name}: Unable to complete conversion: ${x}`;
+                });
+        }
+    });
+
+
+    function saveFile(blob, filename) {
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(blob, filename);
+        } else {
+            var a = document.createElement("a");
+            document.body.appendChild(a);
+            var url = window.URL.createObjectURL(blob);
+            a.href = url;
+            a.download = filename;
+            a.click();
+            setTimeout(function () {
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }, 0);
+        }
+    }
+
+</script>
+
+</html>
