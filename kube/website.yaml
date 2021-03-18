@@ -9,8 +9,8 @@ spec:
     app: heicconverter
   ports:
     - name: heic
-      port: 3000
-      targetPort: 3000
+      port: 2000
+      targetPort: 2000
   type: LoadBalancer
 ---
 #app
@@ -34,4 +34,4 @@ spec:
           image: <IMAGE>
           imagePullPolicy: Always
           ports:
-            - containerPort: 3000
+            - containerPort: 2000
